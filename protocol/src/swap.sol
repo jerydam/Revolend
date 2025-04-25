@@ -4,352 +4,394 @@ pragma solidity ^0.8.17;
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+contract Swapper is Ownable, ReentrancyGuard {
+    // Token information
+    struct Token {
+         AggregatorV3Interface tokenpricefeed;
+        address tokenAddress; // Address of the token (0x0 for ETH)
+        uint256 decimal;      // Number of decimals (18 for ETH, USDT, DAI, RVL)
+        string name;          // Token name (e.g., "USDT")
+    }
 
-contract Swapper is Ownable {
+    // Liquidity pool for a token pair
+    struct LiquidityPool {
+        uint256 token1Id;      // First token ID
+        uint256 token2Id;      // Second token ID
+        uint256 token1Balance; // Balance of token1
+        uint256 token2Balance; // Balance of token2
+    }
+
+    // Hardcoded prices (in USD for ETH, USDT, DAI; in ETH for RVL, 18 decimals)
     
-    AggregatorV3Interface pricefeedeth;
+    mapping(uint256 => uint256) public hardcodedPrices;
+    uint256 public constant ETH_PRICE_USD = 1755 * 10**18; // $1755
+    uint256 public constant USDT_PRICE_USD = 1 * 10**18;   // $1
+    uint256 public constant DAI_PRICE_USD = 1 * 10**18;    // $1
+    uint256 public constant RVL_PRICE_ETH = 0.0003 * 10**18; // 0.05 ETH
+    uint256 public constant SLIPPAGE_TOLERANCE = 98;
 
-    struct Tokens {
-        AggregatorV3Interface tokenpricefeed;
-        uint decimal;
-        address tokenaddress;
-        string tokenName;
-    }
+    // Token data
+    mapping(uint256 => Token) public tokens;
+    uint256 public tokenCount;
 
-    struct swapdata {
-        uint from_token;
-        uint to_token;
-        uint from_amount;
-        uint to_amount;
-    }
+    // Liquidity pools
+    mapping(bytes32 => LiquidityPool) public pools;
+    mapping(bytes32 => bool) public poolExists;
 
-    struct User {
-        address user;
-        mapping(bytes32 => liquidity) userliquidity;
-        mapping(uint => swapdata) userSwapdata;
-    }
+    // Events
+    event SwapExecuted(
+        address indexed user,
+        uint256 fromTokenId,
+        uint256 toTokenId,
+        uint256 fromAmount,
+        uint256 toAmount
+    );
+    event LiquidityAdded(
+        address indexed provider,
+        uint256 token1Id,
+        uint256 token2Id,
+        uint256 token1Amount,
+        uint256 token2Amount
+    );
+    event LiquidityRemoved(
+        address indexed provider,
+        uint256 token1Id,
+        uint256 token2Id,
+        uint256 token1Amount,
+        uint256 token2Amount
+    );
 
-    struct liquidity {
-        address creator;
-        bytes32 pairId;
-        uint token1;
-        uint token2;
-        uint token1balance;
-        uint token2balance;
-    }
-
-    mapping(uint => liquidity) public liquidities;
-    mapping(bytes32 => bool) pairExists;
-    mapping(address => User) userdata;
-    mapping(uint => Tokens) public tokendata;
-    uint256 public ethSwapBalance;
-    uint256 public tokenIdCounter;
-    uint liquidityids;
-    uint swapids;
-    address public treasury;
-    address public RevoNft;
-    address public RevoErc20;
-    address public dao;
-
-    constructor(
-        address _owner
-    ) Ownable(_owner) {
-    tokendata[0] = Tokens({
-            tokenpricefeed: AggregatorV3Interface(0x59F1ec1f10bD7eD9B938431086bC1D9e233ECf41),
+    constructor() Ownable(msg.sender) {
+        // Initialize tokens
+        tokens[0] = Token({
+            tokenpricefeed: AggregatorV3Interface(0x91f3Ff344623aDC499eC6A34fC6311e8Abbf7880),
+            tokenAddress: address(0),
             decimal: 18,
-            tokenaddress: address(0),
-            tokenName: "eth"
+            name: "ETH"
         });
-        // DAI
-    tokendata[1] = Tokens({
-            tokenpricefeed: AggregatorV3Interface(0xb84a700192A78103B2dA2530D99718A2a954cE86 ),
+        hardcodedPrices[0] = ETH_PRICE_USD;
+
+        tokens[1] = Token({
+              tokenpricefeed: AggregatorV3Interface(0xAE17aC6B7565176B9dDAD32E0dFFdC52A221b351 ),
+            tokenAddress: 0x8e74Dbce9C5070E92795806D95b690469f685EbF, // USDT address
             decimal: 18,
-            tokenaddress: 0x1D5cd5833f43C63F724eBb0F28C6AaeD79bF5BF2,
-            tokenName: "USDT"
+            name: "USDT"
         });
-        // USDT
-    tokendata[2] = Tokens({
-            tokenpricefeed: AggregatorV3Interface(0x9388954B816B2030B003c81A779316394b3f3f11),
+        hardcodedPrices[1] = USDT_PRICE_USD;
+
+        tokens[2] = Token({
+             tokenpricefeed: AggregatorV3Interface(0x7a0335B768C855792F225626F18de5291f142Ec9),
+            tokenAddress: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D, // DAI address
             decimal: 18,
-            tokenaddress: 0xE9C49311b81545cCed67aB3313C8f4f938ba1920,
-            tokenName: "dai"
+            name: "DAI"
         });
-    }
+        hardcodedPrices[2] = DAI_PRICE_USD;
 
-    modifier validtateToken(uint _tokenid) {
-        Tokens storage token = tokendata[_tokenid];
-        require(
-            token.tokenpricefeed != AggregatorV3Interface(address(0)),
-            "Invalid token"
-        );
-        _;
-    }
-
-    modifier onlyDAO() {
-        require(msg.sender == dao, "Only DAO can call this function");
-        _;
-    }
-
-    function setdaoaddress(address _dao) public onlyOwner {
-        dao = _dao;
-    }
-
-    function getLatestPrice(
-        AggregatorV3Interface pricefeed
-    )
-        internal
-        view
-        returns (
-            uint80 roundID,
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        )
-    {
-        (roundID, price, startedAt, timeStamp, answeredInRound) = pricefeed
-            .latestRoundData();
-    }
-
-    function _addswaptoken(
-        address _aggregatorpricefeed,
-        uint _decimal,
-        address _tokenaddress,
-        string memory _tokenname
-    ) internal {
-        uint tokenId = tokenIdCounter++;
-        tokendata[tokenId] = Tokens({
-            tokenpricefeed: AggregatorV3Interface(_aggregatorpricefeed),
-            decimal: _decimal,
-            tokenaddress: _tokenaddress,
-            tokenName: _tokenname
+        tokens[3] = Token({
+             tokenpricefeed: AggregatorV3Interface(0xB5d3e4080dF612d33E78A523c9F4d3362ee2EC48),
+            tokenAddress: 0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc, // RVL address
+            decimal: 18,
+            name: "RVL"
         });
-    }
-    function addSwappableToken(
-        address _aggregatorpricefeed,
-        uint _decimal,
-        address _tokenaddress,
-        string memory _tokenname
-    ) public onlyDAO {
-        _addswaptoken(_aggregatorpricefeed, _decimal, _tokenaddress, _tokenname);
+        hardcodedPrices[3] = RVL_PRICE_ETH;
+
+        tokenCount = 4;
     }
 
+    // Helper function to calculate swap amount
+    function _calculateSwapAmount(
+        uint256 _fromTokenId,
+        uint256 _toTokenId,
+        uint256 _amountToSwap,
+        uint256 _fromDecimal,
+        uint256 _toDecimal
+    ) internal view returns (uint256) {
+        uint256 fromPrice = hardcodedPrices[_fromTokenId];
+        uint256 toPrice = hardcodedPrices[_toTokenId];
+        require(fromPrice > 0 && toPrice > 0, "Invalid price data");
+
+        uint256 amountToReceive;
+        if (_fromTokenId == 3) { // RVL as fromToken
+            if (_toTokenId == 0) { // RVL to ETH
+                amountToReceive = (_amountToSwap * fromPrice) / 10**18;
+            } else { // RVL to USDT/DAI
+                uint256 ethValue = (_amountToSwap * fromPrice) / 10**18; // RVL in ETH
+                amountToReceive = (ethValue * ETH_PRICE_USD) / toPrice; // ETH to USD
+            }
+        } else if (_toTokenId == 3) { // USDT/DAI/ETH to RVL
+            if (_fromTokenId == 0) { // ETH to RVL
+                amountToReceive = (_amountToSwap * 10**18) / toPrice;
+            } else { // USDT/DAI to RVL
+                uint256 ethValue = (_amountToSwap * fromPrice) / ETH_PRICE_USD; // USD to ETH
+                amountToReceive = (ethValue * 10**18) / toPrice; // ETH to RVL
+            }
+        } else { // ETH/USDT/DAI to ETH/USDT/DAI
+            amountToReceive = (_amountToSwap * fromPrice) / toPrice;
+        }
+
+        return (amountToReceive * 10**_toDecimal) / 10**_fromDecimal;
+    }
+
+  // Swap tokens for tokens
     function swapTokensForTokens(
-        uint _fromTokenId,
-        uint _toTokenId,
+        uint256 _fromTokenId,
+        uint256 _toTokenId,
         uint256 _amountToSwap
-    ) external returns (bool) {
-        Tokens memory fromToken = tokendata[_fromTokenId];
-        Tokens memory toToken = tokendata[_toTokenId];
+    ) external nonReentrant returns (bool) {
+        require(_fromTokenId < tokenCount && _toTokenId < tokenCount, "Invalid token ID");
+        require(_fromTokenId != 0 && _toTokenId != 0, "Use ETH swap functions for ETH");
+        require(_fromTokenId != _toTokenId, "Cannot swap same token");
+        require(_amountToSwap > 0, "Invalid amount");
 
+        Token memory fromToken = tokens[_fromTokenId];
+        Token memory toToken = tokens[_toTokenId];
+
+        // Check allowance
         require(
-            fromToken.tokenpricefeed != AggregatorV3Interface(address(0)),
-            "Invalid from token"
+            IERC20(fromToken.tokenAddress).allowance(msg.sender, address(this)) >= _amountToSwap,
+            "Insufficient allowance"
+        );
+
+        // Check liquidity pool
+        bytes32 pairId = keccak256(abi.encodePacked(_fromTokenId, _toTokenId));
+        require(poolExists[pairId], "Liquidity pool does not exist");
+        LiquidityPool storage pool = pools[pairId];
+
+        // Calculate amount to receive
+        uint256 amountToReceive = _calculateSwapAmount(
+            _fromTokenId,
+            _toTokenId,
+            _amountToSwap,
+            fromToken.decimal,
+            toToken.decimal
+        );
+
+        // Apply slippage tolerance
+        uint256 minAmountOut = (amountToReceive * SLIPPAGE_TOLERANCE) / 100;
+        require(amountToReceive >= minAmountOut, "Slippage too high");
+
+        // Check liquidity
+        uint256 toTokenBalance = (_toTokenId == pool.token1Id) ? pool.token1Balance : pool.token2Balance;
+        require(toTokenBalance >= amountToReceive, "Insufficient liquidity");
+
+        // Transfer tokens
+        require(
+            IERC20(fromToken.tokenAddress).transferFrom(msg.sender, address(this), _amountToSwap),
+            "From token transfer failed"
         );
         require(
-            toToken.tokenpricefeed != AggregatorV3Interface(address(0)),
-            "Invalid to token"
+            IERC20(toToken.tokenAddress).transfer(msg.sender, amountToReceive),
+            "To token transfer failed"
         );
 
-        (, int fromPrice, , , ) = getLatestPrice(fromToken.tokenpricefeed);
-        (, int toPrice, , , ) = getLatestPrice(toToken.tokenpricefeed);
+        // Update pool balances
+        if (_fromTokenId == pool.token1Id) {
+            pool.token1Balance += _amountToSwap;
+            pool.token2Balance -= amountToReceive;
+        } else {
+            pool.token1Balance -= amountToReceive;
+            pool.token2Balance += _amountToSwap;
+        }
 
-        uint256 fromPriceInUsd = uint256(fromPrice) * fromToken.decimal;
-        uint256 toPriceInUsd = uint256(toPrice) * toToken.decimal;
+        emit SwapExecuted(msg.sender, _fromTokenId, _toTokenId, _amountToSwap, amountToReceive);
+        return true;
+    }
 
-        uint256 amountToReceive = (_amountToSwap * fromPriceInUsd) /
-            toPriceInUsd;
+    // Swap ETH for tokens
+    function swapEthForTokens(
+        uint256 _tokenId
+    ) external payable nonReentrant returns (bool) {
+        require(_tokenId < tokenCount, "Invalid token ID");
+        require(_tokenId != 0, "Cannot swap to ETH");
+        require(msg.value > 0, "Invalid ETH amount");
 
+        Token memory token = tokens[_tokenId];
+
+        // Calculate amount to receive
+        uint256 amountToReceive = _calculateSwapAmount(
+            0, // ETH
+            _tokenId,
+            msg.value,
+            18, // ETH decimals
+            token.decimal
+        );
+
+        // Apply slippage tolerance
+        uint256 minAmountOut = (amountToReceive * SLIPPAGE_TOLERANCE) / 100;
+        require(amountToReceive >= minAmountOut, "Slippage too high");
+
+        // Check liquidity
         require(
-            IERC20(toToken.tokenaddress).balanceOf(address(this)) >= _amountToSwap,
+            IERC20(token.tokenAddress).balanceOf(address(this)) >= amountToReceive,
             "Insufficient liquidity"
         );
-            IERC20(fromToken.tokenaddress).transferFrom(msg.sender, address(this), amountToReceive);
-            IERC20(toToken.tokenaddress).transfer(msg.sender, amountToReceive);
 
-        // Update user swap data
-        swapdata storage newSwap = userdata[msg.sender].userSwapdata[swapids];
-        newSwap.from_token = _fromTokenId;
-        newSwap.to_token = _toTokenId;
-        newSwap.from_amount = _amountToSwap;
-        newSwap.to_amount = amountToReceive;
-        swapids++;
-
-        return true;
-    }
-
-    function swapEthForTokens(uint _tokenId) external payable returns (bool) {
-        Tokens memory token = tokendata[_tokenId];
-
+        // Transfer tokens
         require(
-            token.tokenpricefeed != AggregatorV3Interface(address(0)),
-            "Invalid token"
+            IERC20(token.tokenAddress).transfer(msg.sender, amountToReceive),
+            "Token transfer failed"
         );
 
-        (, int tokenPrice, , , ) = getLatestPrice(token.tokenpricefeed);
-
-        uint256 tokenPriceInUsd = uint256(tokenPrice) * token.decimal;
-        uint256 amountToReceive = (msg.value * 10 ** 18) / tokenPriceInUsd;
-        require(IERC20(token.tokenaddress).balanceOf(address(this)) >= amountToReceive, "Insufficient liquidity");
-        
-            IERC20(token.tokenaddress).transfer(msg.sender, amountToReceive);
-        
-        tokendata[_tokenId] = token;
-
-
-        // Update user swap data
-        swapdata storage newSwap = userdata[msg.sender].userSwapdata[swapids];
-        newSwap.from_token = 0; // ETH token ID is 0
-        newSwap.to_token = _tokenId;
-        newSwap.from_amount = msg.value;
-        newSwap.to_amount = amountToReceive;
-        swapids++;
-
+        emit SwapExecuted(msg.sender, 0, _tokenId, msg.value, amountToReceive);
         return true;
     }
 
+    // Swap tokens for ETH
     function swapTokensForEth(
-        uint _tokenId,
+        uint256 _tokenId,
         uint256 _amountToSwap
-    ) external returns (bool) {
-        Tokens memory token = tokendata[_tokenId];
+    ) external nonReentrant returns (bool) {
+        require(_tokenId < tokenCount, "Invalid token ID");
+        require(_tokenId != 0, "Cannot swap from ETH");
+        require(_amountToSwap > 0, "Invalid token amount");
 
+        Token memory token = tokens[_tokenId];
+
+        // Check allowance
         require(
-            token.tokenpricefeed != AggregatorV3Interface(address(0)),
-            "Invalid token"
+            IERC20(token.tokenAddress).allowance(msg.sender, address(this)) >= _amountToSwap,
+            "Insufficient allowance"
         );
 
-        (, int tokenPrice, , , ) = getLatestPrice(token.tokenpricefeed);
-
-        uint256 tokenPriceInUsd = uint256(tokenPrice) * token.decimal;
-        uint256 amountToReceive = (_amountToSwap * tokenPriceInUsd) / 10 ** 18;
-        IERC20(token.tokenaddress).transferFrom(msg.sender, address(this), _amountToSwap);
-
-        require(
-            amountToReceive <= address(this).balance,
-            "Insufficient liquidity"
+        // Calculate amount to receive
+        uint256 amountToReceive = _calculateSwapAmount(
+            _tokenId,
+            0, // ETH
+            _amountToSwap,
+            token.decimal,
+            18 // ETH decimals
         );
 
+        // Apply slippage tolerance
+        uint256 minAmountOut = (amountToReceive * SLIPPAGE_TOLERANCE) / 100;
+        require(amountToReceive >= minAmountOut, "Slippage too high");
+
+        // Check liquidity
+        require(
+            address(this).balance >= amountToReceive,
+            "Insufficient ETH liquidity"
+        );
+
+        // Transfer tokens
+        require(
+            IERC20(token.tokenAddress).transferFrom(msg.sender, address(this), _amountToSwap),
+            "Token transfer failed"
+        );
+
+        // Transfer ETH
         payable(msg.sender).transfer(amountToReceive);
 
-        // Update user swap data
-        swapdata storage newSwap = userdata[msg.sender].userSwapdata[swapids];
-        newSwap.from_token = _tokenId;
-        newSwap.to_token = 0; // ETH token ID is 0
-        newSwap.from_amount = _amountToSwap;
-        newSwap.to_amount = amountToReceive;
-        swapids++;
-
+        emit SwapExecuted(msg.sender, _tokenId, 0, _amountToSwap, amountToReceive);
         return true;
     }
 
-    function addLiquidity(uint _pairId, uint _amount) external payable {
-        require(msg.value > 0 || _amount > 0, "Invalid amount");
+    // Add liquidity to a token pair
+    function addLiquidity(
+        uint256 _token1Id,
+        uint256 _token2Id,
+        uint256 _token1Amount,
+        uint256 _token2Amount
+    ) external payable {
+        require(_token1Id < tokenCount && _token2Id < tokenCount, "Invalid token ID");
+        require(_token1Id != _token2Id, "Cannot create pool with same token");
+        require(_token1Amount > 0 && _token2Amount > 0, "Invalid amount");
 
-        // Fetch liquidity details
-        liquidity storage pool = liquidities[_pairId];
-        require(pool.creator != address(0), "Liquidity pool not found");
-
-        // Transfer tokens from user to contract
-        if (pool.token1 != 0) {
-            IERC20 token1 = IERC20(tokendata[pool.token1].tokenaddress);
-            token1.transferFrom(msg.sender, address(this), _amount);
-            pool.token1balance += _amount;
-        } else {
-            require(msg.value == _amount, "Incorrect ETH amount");
-            pool.token1balance += msg.value;
-        }
-
-        if (pool.token2 != 0) {
-            IERC20 token2 = IERC20(tokendata[pool.token2].tokenaddress);
-            token2.transferFrom(msg.sender, address(this), _amount);
-            pool.token2balance += _amount;
-        } else {
-            require(msg.value == _amount, "Incorrect ETH amount");
-            pool.token2balance += msg.value;
-        }
-
-        bytes32 pairidhash = pool.pairId;
-        // Update liquidity data
-        liquidities[_pairId] = pool;
-
-        // Update user liquidity data
-        userdata[msg.sender].userliquidity[pairidhash] = liquidity({
-            creator: pool.creator,
-            pairId: pool.pairId,
-            token1: pool.token1,
-            token2: pool.token2,
-            token1balance: _amount,
-            token2balance: _amount
-        });
-    }
-
-    function createliquiditypool(
-        uint _token1Id,
-        uint _token1_amount,
-        uint _token2Id,
-        uint _token2_amount
-    ) public payable onlyDAO {
-        require(
-            _token1_amount > 0 && _token2_amount > 0,
-            "Invalid token amount"
-        );
-        require(_token1Id != _token2Id, "Invalid pair");
-
-        // Calculate a unique identifier for the pair
         bytes32 pairId = keccak256(abi.encodePacked(_token1Id, _token2Id));
+        LiquidityPool storage pool = pools[pairId];
 
-        // Ensure that the pair doesn't already exist
-        require(!pairExists[pairId], "Pair already exists");
-
-        // Transfer tokens from the user to the contract
+        // Transfer tokens or ETH
         if (_token1Id != 0) {
-            IERC20(tokendata[_token1Id].tokenaddress).transferFrom(
-                msg.sender,
-                address(this),
-                _token1_amount
+            require(
+                IERC20(tokens[_token1Id].tokenAddress).transferFrom(msg.sender, address(this), _token1Amount),
+                "Token1 transfer failed"
             );
         } else {
-            require(msg.value == _token1_amount, "Incorrect ETH amount");
+            require(msg.value == _token1Amount, "Incorrect ETH amount");
         }
 
         if (_token2Id != 0) {
-            IERC20(tokendata[_token2Id].tokenaddress).transferFrom(
-                msg.sender,
-                address(this),
-                _token2_amount
+            require(
+                IERC20(tokens[_token2Id].tokenAddress).transferFrom(msg.sender, address(this), _token2Amount),
+                "Token2 transfer failed"
             );
         } else {
-            require(msg.value == _token2_amount, "Incorrect ETH amount");
+            require(msg.value == _token2Amount, "Incorrect ETH amount");
         }
 
-        // Update liquidity balances
-        liquidity storage newLiquidity = liquidities[liquidityids];
-        newLiquidity.creator = msg.sender;
-        newLiquidity.token1 = _token1Id;
-        newLiquidity.pairId = pairId;
-        newLiquidity.token2 = _token2Id;
-        newLiquidity.token1balance = _token1_amount;
-        newLiquidity.token2balance = _token2_amount;
+        // Initialize or update pool
+        if (!poolExists[pairId]) {
+            pool.token1Id = _token1Id;
+            pool.token2Id = _token2Id;
+            poolExists[pairId] = true;
+        }
+        pool.token1Balance += _token1Amount;
+        pool.token2Balance += _token2Amount;
 
-        // Update user liquidity data
-        userdata[msg.sender].userliquidity[pairId] = newLiquidity;
-
-        // Mark the pair as existing
-        pairExists[pairId] = true;
-        liquidityids++;
+        emit LiquidityAdded(msg.sender, _token1Id, _token2Id, _token1Amount, _token2Amount);
     }
 
-    function getAllLiquidityPairs() external view returns (liquidity[] memory) {
-        liquidity[] memory pairs = new liquidity[](liquidityids);
+    // Remove liquidity (simplified, assumes full withdrawal)
+    function removeLiquidity(uint256 _token1Id, uint256 _token2Id) external nonReentrant {
+        require(_token1Id < tokenCount && _token2Id < tokenCount, "Invalid token ID");
+        bytes32 pairId = keccak256(abi.encodePacked(_token1Id, _token2Id));
+        require(poolExists[pairId], "Liquidity pool does not exist");
 
-        for (uint i = 0; i < liquidityids; i++) {
-            pairs[i] = liquidities[i];
+        LiquidityPool storage pool = pools[pairId];
+        uint256 token1Amount = pool.token1Balance;
+        uint256 token2Amount = pool.token2Balance;
+
+        require(token1Amount > 0 && token2Amount > 0, "No liquidity to remove");
+
+        // Transfer tokens or ETH
+        if (_token1Id != 0) {
+            require(
+                IERC20(tokens[_token1Id].tokenAddress).transfer(msg.sender, token1Amount),
+                "Token1 transfer failed"
+            );
+        } else {
+            payable(msg.sender).transfer(token1Amount);
         }
 
-        return pairs;
+        if (_token2Id != 0) {
+            require(
+                IERC20(tokens[_token2Id].tokenAddress).transfer(msg.sender, token2Amount),
+                "Token2 transfer failed"
+            );
+        } else {
+            payable(msg.sender).transfer(token2Amount);
+        }
+
+        // Reset pool
+        pool.token1Balance = 0;
+        pool.token2Balance = 0;
+
+        emit LiquidityRemoved(msg.sender, _token1Id, _token2Id, token1Amount, token2Amount);
     }
 
-    receive() external payable{}
-    fallback() external payable{}
+    // Add new token (only owner)
+   function addToken(
+    address _tokenAddress,
+    uint256 _decimal,
+    string memory _name,
+    AggregatorV3Interface _priceFeed // Add this argument to match the Token's constructor
+) external onlyOwner {
+    tokens[tokenCount] = Token({
+        tokenpricefeed: _priceFeed,  // Use the new variable instead of hardcoding it later
+        tokenAddress: _tokenAddress,
+        decimal: _decimal,
+        name: _name
+    });
+  hardcodedPrices[tokenCount] = getHardcodedPrice(_priceFeed); // Add this line to update prices for newly added tokens
+    tokenCount++;
+}
+
+// Helper function to calculate the price of a new token (only owner)
+function getHardcodedPrice(AggregatorV3Interface _pricefeed) internal pure  returns(uint256){
+  return uint256(0);
+}
+
+
+
+    receive() external payable {}
 }

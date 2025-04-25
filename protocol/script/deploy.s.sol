@@ -16,9 +16,14 @@ contract Deployscript is Script {
     RevoNft revoNft;
     Swapper swap;
     DAO dao;
-    address erc20;
-    address dai = 0xe8B0c8A6ED34Cffd85a324DA1D139432F3511c17;
-    address usdt = 0xB049D6eA5629ce822DF63491cA6d999A8CB541a8;
+    address erc20 = 0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc;
+    address dai = 0x51099Aa160B7709d9d1B8164abC8668AaB24B242;
+    address usdt = 0x8e74Dbce9C5070E92795806D95b690469f685EbF;
+    address rvlPriceFeed = 0xB5d3e4080dF612d33E78A523c9F4d3362ee2EC48;
+      address _initialOwner = msg.sender;
+        address usdtPriceFeed = 0xAE17aC6B7565176B9dDAD32E0dFFdC52A221b351;
+        address daiPriceFeed = 0x7a0335B768C855792F225626F18de5291f142Ec9;
+         address ethPriceFeed = 0x91f3Ff344623aDC499eC6A34fC6311e8Abbf7880;
     P2PLending lending;
 
     function run() public {
@@ -43,7 +48,8 @@ contract Deployscript is Script {
         console.log("NFT Contract at:", address(revoNft));
 
         // Step 5: Deploy Swapper
-        swap = new Swapper(msg.sender);
+        swap = new Swapper(    
+        );
         console.log("Swapper Contract at:", address(swap));
 
         // Step 6: Deploy P2P Lending Contract
