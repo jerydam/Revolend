@@ -1,4 +1,4 @@
-# RevoLend Documentation [Web App](https://RevoLend.vercel.app) / [Demo Video]()
+# RevoLend Documentation [Web App](https://revolend.vercel.app) / [Demo Video]()
 ![File](https://supposed-emerald-snake.myfilebase.com/ipfs/QmNVYrKhgWUfVRkeWMZPgxCqrq2Z4iXxsFw6bHEj1eYPbU)
 RevoLend is a next-generation DeFi protocol transforming peer-to-peer (P2P) lending and borrowing through a secure, collateral-backed dApp. Designed to overcome the inefficiencies of traditional finance, RevoLend offers users a faster, more transparent, and more accessible lending experience.
 
@@ -88,7 +88,7 @@ TradingView Live API, Filebase Storage
 
 ### Connect Wallet
 ![File](https://supposed-emerald-snake.myfilebase.com/ipfs/QmW7y8y48L9sfKN8SLHoc1jK8Pmmt4xWeVt2J3oXkBxbcJ)
-To get started, visit our [Web App](https://RevoLend.vercel.app).
+To get started, visit our [Web App](https://revolend.vercel.app).
 
 #### On Desktop:
 Click the "Connect Wallet" button at the top right corner of the screen. You can log in either using your wallet or your email.
