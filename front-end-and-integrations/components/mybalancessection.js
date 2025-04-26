@@ -37,7 +37,7 @@ import {
                     const getRVLBalance = await tokenContractReadSettings.balanceOf(address)
                     console.log(getRVLBalance)
                     setRVLBalance(getRVLBalance.toString() * 10**-18)
-                    setTokenPrice(parseFloat(0.05).toFixed(10))
+                    setTokenPrice(parseFloat(0.5).toFixed(10))
                     const ETHbalance = await ethersProvider.getBalance(address)   
                     console.log(ETHbalance)
                     setuserETHBalance(formatUnits(ETHbalance, 18))
