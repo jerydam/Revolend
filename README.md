@@ -158,8 +158,9 @@ Please note: do not send funds directly to the lender or borrower. All transacti
 The RevoLend Token (RVL) is the native token of the RevoLend platform and is primarily used as collateral for lending activities.
 In addition to RVL, users can also use other supported tokens like USDT and DAI as collateral.
 
-## RevoLend Swap Feature with Chainlink Oracles
-RevoLend offers a seamless and secure token swap feature, integrated with Chainlink Oracles to ensure accurate and reliable price feeds. This allows users to efficiently swap a variety of tokens directly within the platform.
+## RevoLend Swap Feature with ChainLink Oracles
+![File](https://supposed-emerald-snake.myfilebase.com/ipfs/QmVxKY8tvtADMDgny2wnnh1qjntJj5mGDwyghDxckpEB5t)
+RevoLend offers a seamless and secure token swap feature, integrated with ChainLink Oracles to ensure accurate and reliable price feeds. This allows users to efficiently swap a variety of tokens directly within the platform.
 
 Currently, users can swap the following tokens:
 
@@ -171,7 +172,7 @@ Currently, users can swap the following tokens:
 
 * DAI (Dai Stablecoin)
 
-With the integration of Chainlink Oracles, the platform ensures that the swap rates reflect the most up-to-date market prices, providing users with fair and transparent exchange rates every time. This integration guarantees accuracy and trustworthiness in token conversions, removing the need for manual price checks or reliance on third-party services.
+With the integration of ChainLink Oracles, the platform ensures that the swap rates reflect the most up-to-date market prices, providing users with fair and transparent exchange rates every time. This integration guarantees accuracy and trustworthiness in token conversions, removing the need for manual price checks or reliance on third-party services.
 Whether you're a lender, borrower, or general user on RevoLend, this swap feature provides flexibility and convenience, making it easy to exchange tokens directly within the platform. The process is fast, secure, and powered by decentralized oracles, ensuring that you get the best rates available at the time of your transaction.
 
 ## Additional Notes (Future Upgrades for RevoLend)
@@ -213,6 +214,9 @@ Liquidity providers in the RevoLend Swap will be rewarded with incentives. Users
 
 
 ## Contract Addresses with Swell Testnet Links [Swell Testnet Explorer](https://swell-testnet-explorer.alt.technology)
+![File](https://supposed-emerald-snake.myfilebase.com/ipfs/QmRx1nqgzqwn98pdKNhmbxBufDrYqFXSYV1yrhC31bDBzp)
+
+**Note that all contracts are verified on the Swell testnet explorer.**
 
 ### P2P Lending/Borrowing Contract
 
