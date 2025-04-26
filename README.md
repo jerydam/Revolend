@@ -66,17 +66,17 @@ The platform features a powerful combination of smart contracts and front-end te
 Additional features like search functionalities, pagination, a wide library of Flaticons, and an intuitive, responsive design ensure a slick and seamless user experience across devices.
 
 ## Technologies and Tools used
-### Frontend
- Next.js, Tailwind CSS, JavaScript
-
-### Backend
-Node.js, PostgreSQL
-
 ### Smart Contracts
 Solidity, Foundry, OpenZeppelin
 
 ### Web3 Integrations
 Web3Modal, Ethers.js, Swell Testnet Token Tracker
+
+### Frontend
+ Next.js, Tailwind CSS, JavaScript
+
+### Backend
+Node.js, PostgreSQL
 
 ### Oracles
 Chainlink oracles
@@ -133,7 +133,7 @@ New supported tokens and collateral options will continue to be added to the pla
 To borrow, follow the steps below (Your wallet will popup to sign the transactions):
 * Fill the details above setting the duration, amount of ETH to borrow, collateral, collateral amount, "yes if collateral is ERC20 or no if collateral is ERC721 (an NFT)", and interest rate (which is the amount of interest you will pay to any user that funds your loan).
 * Click on the "Approve" button to approve the loan transaction.
-* Proceed to create the loan by clicking on the "Create Loan" button.
+* Proceed to create the loan by clicking on the "Create Loan Request" button.
 After creating the loan, you will be automatically navigated to the Lending section where you can monitor all your created/funded loans.
 
 ### Lending
@@ -147,7 +147,7 @@ To start lending, users can easily navigate and interact with the available acti
 * Claim collateral: The claim collateral button is typically available for the lender to use in case a borrower fails to repay a loan during the specified duration in the loan. You can only claim collateral of a loan you funded.
 * Withdraw loan: This button can be used by the borrower of a loan to withdraw the loan after it has been funded by a lender.
 * Repay loan: This button is available to only the borrower of a loan such that before the end of the loan duration, the borrower uses it to repay the borrowed amount with interest.
-* Withdraw collateral: If there is a scenario where there is no lender of a loan you created as a borrower, you can use this button to withdraw your collateral back. You can use this button only when your loan has not been funded.
+* Withdraw collateral: In the event that there is no lender of a loan you created as a borrower, you can use this button to withdraw your collateral back. You can use this button only when your loan has not been funded.
 
 ### Revolend Decentralised Chat System
 ![File](https://supposed-emerald-snake.myfilebase.com/ipfs/Qmc3PiEqJm73qdCaRcbeqZExETSjJZjjPtE3wygG69R6Df)
@@ -174,7 +174,7 @@ Currently, users can swap the following tokens:
 With the integration of Chainlink Oracles, the platform ensures that the swap rates reflect the most up-to-date market prices, providing users with fair and transparent exchange rates every time. This integration guarantees accuracy and trustworthiness in token conversions, removing the need for manual price checks or reliance on third-party services.
 Whether you're a lender, borrower, or general user on Revolend, this swap feature provides flexibility and convenience, making it easy to exchange tokens directly within the platform. The process is fast, secure, and powered by decentralized oracles, ensuring that you get the best rates available at the time of your transaction.
 
-## Additional Notes (Future Upgrades for Revolend:)
+## Additional Notes (Future Upgrades for Revolend)
 In upcoming updates, Revolend will introduce a host of new features and improvements to enhance the user experience and expand the platform's capabilities:
 
 ### Enhanced User Experience:
@@ -192,8 +192,8 @@ We plan to expand the list of supported tokens and collateral options, providing
 ### Advanced Security Features:
 Additional security measures will be implemented to further protect user assets and transactions, building on Revolend’s robust security architecture.
 
-### Staking and Yield Farming Opportunities:
-Revolend aims to introduce staking and yield farming features, allowing users to earn passive income by staking their tokens or providing liquidity to the platform.
+### Staking and Other Yield Farming Opportunities:
+Revolend aims to introduce staking and other yield farming features, allowing users to earn passive income by staking their tokens or providing liquidity to the platform.
 
 ### Cross-Chain Compatibility:
 We’re exploring the integration of cross-chain capabilities, allowing users to interact with Revolend using assets from other blockchain networks, enhancing accessibility and liquidity.
