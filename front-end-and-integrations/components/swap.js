@@ -73,7 +73,7 @@ export default function SwapSection() {
            }, [userETHBalance, userUSDTBalance, userDAIBalance, userRVLBalance, address, loading])
 
         const [tokenA, setTokenA] = useState("0")
-        const [tokenB, setTokenB] = useState("2")
+        const [tokenB, setTokenB] = useState("3")
         const [tokenAamount, setTokenAamount] = useState()
         const [sameTokenError, setSameTokenError] = useState(false)
         //Now we are going to write the Swap logic
@@ -175,10 +175,10 @@ export default function SwapSection() {
          <div className='p-[0.5cm] pb-[1cm] bg-[#eee] rounded-md'>
          <div className='text-[#222] font-[500] clear-both'>
          <select className="float-left outline-none bg-[#209] text-[#fff] p-[0.1cm]" onChange={(e) => setTokenB(e.target.value)}>
+            <option value="3">RVL</option>
             <option value="2">DAI</option>
             <option value="1">USDT</option>
             <option value="0">ETH</option>
-            <option value="3">RVL</option>
           </select>
           <span className='float-right'>Swell Chain</span>
          </div>

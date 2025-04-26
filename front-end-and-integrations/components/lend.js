@@ -360,6 +360,9 @@ export default function LendSection() {
 
             const sendChat = async (initialMessage, initialLender, initialBorrower, initialSender, initialLoanID, initialDatetime) => {
               setLoading(true)
+              setTimeout(() => {
+                setLoading(false)
+              }, 5000)
                try {
                  const request = await axios.post("/api/sendchatapi", {message:initialMessage, lender:initialLender, borrower:initialBorrower,  sender:initialSender, loanid:initialLoanID, datetime:initialDatetime})
                  console.log(request)

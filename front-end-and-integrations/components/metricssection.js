@@ -38,7 +38,7 @@ export default function MetricsSection() {
                 const getTotalTokenSupply = await tokenContractReadSettings.totalSupply()
                 console.log(getTotalTokenSupply.toString() * 10**-18)
                 settotalTokenSupply(getTotalTokenSupply.toString() * 10**-18)
-                setTokenPrice(parseFloat(0.05).toFixed(10))
+                setTokenPrice(parseFloat(0.5).toFixed(10))
                 const getNumberOfLoans = await lendBorrowContractReadSettings.loanCount()
                 console.log(getNumberOfLoans.toString())
                 setnumberOfLoans(getNumberOfLoans.toString())
