@@ -204,6 +204,9 @@ In the future, we plan to launch a mobile app, providing users with easy access 
 ### Enhanced Analytics and Reporting Tools:
 Lenders and borrowers will have access to detailed analytics and reporting tools, helping them track their activities, earnings, and overall performance on the platform.
 
+### Liquidity Provider (LP) Rewards:
+Liquidity providers in the Revolend Swap will be rewarded with incentives. Users who supply liquidity to the swap pools (ETH, RVL, USDT, DAI) will earn a share of the trading fees and possibly additional rewards in RVL tokens, encouraging a healthy liquidity environment.
+
 ## Team Members (Team Revolend)
 * Patrick Ominisan - Blockchain developer
 * Jeremiah Oyeniran - Smart contract developer
