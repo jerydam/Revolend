@@ -24,7 +24,7 @@ contract Swapper is Ownable, ReentrancyGuard {
 
     // Hardcoded prices (in USD for ETH, USDT, DAI; in ETH for RVL, 18 decimals)
     
-    mapping(uint256 => uint256) public hardcodedPrices;
+    mapping(uint256 => uint256) public tokenPrice;
     uint256 public constant ETH_PRICE_USD = 1755 * 10**18; // $1755
     uint256 public constant USDT_PRICE_USD = 1 * 10**18;   // $1
     uint256 public constant DAI_PRICE_USD = 1 * 10**18;    // $1
@@ -70,7 +70,7 @@ contract Swapper is Ownable, ReentrancyGuard {
             decimal: 18,
             name: "ETH"
         });
-        hardcodedPrices[0] = ETH_PRICE_USD;
+        tokenPrice[0] = ETH_PRICE_USD;
 
         tokens[1] = Token({
               tokenpricefeed: AggregatorV3Interface(0xAE17aC6B7565176B9dDAD32E0dFFdC52A221b351 ),
@@ -78,7 +78,7 @@ contract Swapper is Ownable, ReentrancyGuard {
             decimal: 18,
             name: "USDT"
         });
-        hardcodedPrices[1] = USDT_PRICE_USD;
+        tokenPrice[1] = USDT_PRICE_USD;
 
         tokens[2] = Token({
              tokenpricefeed: AggregatorV3Interface(0x7a0335B768C855792F225626F18de5291f142Ec9),
@@ -86,7 +86,7 @@ contract Swapper is Ownable, ReentrancyGuard {
             decimal: 18,
             name: "DAI"
         });
-        hardcodedPrices[2] = DAI_PRICE_USD;
+        tokenPrice[2] = DAI_PRICE_USD;
 
         tokens[3] = Token({
              tokenpricefeed: AggregatorV3Interface(0xB5d3e4080dF612d33E78A523c9F4d3362ee2EC48),
@@ -94,7 +94,7 @@ contract Swapper is Ownable, ReentrancyGuard {
             decimal: 18,
             name: "RVL"
         });
-        hardcodedPrices[3] = RVL_PRICE_ETH;
+        tokenPrice[3] = RVL_PRICE_ETH;
 
         tokenCount = 4;
     }
@@ -107,8 +107,8 @@ contract Swapper is Ownable, ReentrancyGuard {
         uint256 _fromDecimal,
         uint256 _toDecimal
     ) internal view returns (uint256) {
-        uint256 fromPrice = hardcodedPrices[_fromTokenId];
-        uint256 toPrice = hardcodedPrices[_toTokenId];
+        uint256 fromPrice = tokenPrice[_fromTokenId];
+        uint256 toPrice = tokenPrice[_toTokenId];
         require(fromPrice > 0 && toPrice > 0, "Invalid price data");
 
         uint256 amountToReceive;
@@ -382,7 +382,7 @@ contract Swapper is Ownable, ReentrancyGuard {
         decimal: _decimal,
         name: _name
     });
-  hardcodedPrices[tokenCount] = getHardcodedPrice(_priceFeed); // Add this line to update prices for newly added tokens
+  tokenPrice[tokenCount] = getHardcodedPrice(_priceFeed); // Add this line to update prices for newly added tokens
     tokenCount++;
 }
 

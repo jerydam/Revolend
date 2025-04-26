@@ -2979,7 +2979,7 @@ const swapContractABI = [
   },
   {
     inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "hardcodedPrices",
+    name: "tokenPrice",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",

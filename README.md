@@ -209,27 +209,27 @@ Lenders and borrowers will have access to detailed analytics and reporting tools
 * Jeremiah Oyeniran - Smart contract developer
 
 
-## Contract Addresses with CrossFi Testnet Links [CrossFi Explorer](https://test.xfiscan.com/dashboard)
+## Contract Addresses with Swell Testnet Links [Swell Testnet Explorer](https://swell-testnet-explorer.alt.technology)
 
 ### P2P Lending/Borrowing Contract
 
-✅ [P2PLending](https://test.xfiscan.com/address/0xD2570DD7bdf47B381d11859efB739595f583CAaB) 🟢
+✅ [P2PLending](https://swell-testnet-explorer.alt.technology/address/0x1C1446490a2A062BAE07584f3116c179D2A07178) 🟢
 - Address: `0x1C1446490a2A062BAE07584f3116c179D2A07178`
 
 ### Revolend ERC20 (RVL) Contract
 
-✅ [Revolend Token](https://test.xfiscan.com/token/0xd8261aA43AaC9F624853ac94A90d3D02409a9935) 🟢
+✅ [Revolend Token](https://swell-testnet-explorer.alt.technology/address/0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc) 🟢
 - Address: `0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc`
 
 ## Other Tokens
 
 ### USDT
 
-- **[USDT](https://test.xfiscan.com/token/0xe8B0c8A6ED34Cffd85a324DA1D139432F3511c17)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
+- **[DAI](https://swell-testnet-explorer.alt.technology/address/0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
 
 ### DAI
 
-- **[DAI](https://test.xfiscan.com/token/0x1442487bb17414d61e00ad1fd148aade193ad3e9)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
+- **[USDT](https://swell-testnet-explorer.alt.technology/token/0x8e74Dbce9C5070E92795806D95b690469f685EbF)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
 
 
 
@@ -556,4 +556,263 @@ event CollateralClaimed(uint loanId, address lender);
 event CollateralAdded(address collateral);
 ```
 
+# Revolend Token Swap Feature with Chainlink Oracles
+
+Revolend's token swap feature enables users to exchange tokens seamlessly within the platform, leveraging Chainlink Oracles for real-time, accurate price feeds. This ensures fair and transparent swap rates for supported tokens: ETH, RVL (Revolend Token), USDT, and DAI. The feature is powered by a Solidity smart contract (`Swapper.sol`) that integrates liquidity pools, Chainlink price feeds, and secure token swapping mechanisms.
+
+
+## Features
+- **Supported Tokens:** Swap between ETH, RVL, USDT, and DAI.
+- **Chainlink Oracles:** Real-time price feeds ensure accurate market rates.
+- **Liquidity Pools:** Decentralized pools maintain token balances for swaps.
+- **Slippage Protection:** A 98% slippage tolerance prevents unfavorable trades.
+- **Security:** Reentrancy protection and Ownable access control.
+- **Flexibility:** Supports ETH-to-token, token-to-ETH, and token-to-token swaps.
+- **Liquidity Management:** Users can add or remove liquidity to/from pools.
+- **Extensibility:** Admins can add new tokens with custom price feeds.
+
+## Smart Contract Overview
+The `Swapper.sol` contract is built with the following key components:
+
+- **Token Struct:** Stores token metadata (address, decimals, name, Chainlink price feed).
+- **LiquidityPool Struct:** Manages balances for token pairs.
+- **token Prices:** Fallback prices for tokens (e.g., ETH at $1755, RVL at 0.0003 ETH).
+
+### Swap Functions
+- `swapTokensForTokens`: Swap between ERC20 tokens.
+- `swapEthForTokens`: Swap ETH for ERC20 tokens.
+- `swapTokensForEth`: Swap ERC20 tokens for ETH.
+
+### Liquidity Functions
+- `addLiquidity`: Add tokens or ETH to a pool.
+- `removeLiquidity`: Withdraw liquidity from a pool.
+
+### Admin Functions
+- `addToken`: Add new tokens with price feeds (owner-only).
+
+The contract uses OpenZeppelin's `IERC20`, `Ownable`, and `ReentrancyGuard` for secure token interactions and access control, and Chainlink's `AggregatorV3Interface` for price feeds.
+
 ---
+
+## Code Explanation
+
+Below is a detailed breakdown of the key components and functions in `Swap.sol`.
+
+### 1. Contract Setup and Dependencies
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "../lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+
+contract Swapper is Ownable, ReentrancyGuard {
+    // ...
+}
+```
+- **Dependencies:** Uses OpenZeppelin for ERC20 token interactions, ownership, and reentrancy protection; Chainlink for price feeds.
+- **Inheritance:** `Ownable` restricts sensitive functions to the contract owner; `ReentrancyGuard` prevents reentrancy attacks.
+
+---
+
+### 2. Data Structures
+```solidity
+struct Token {
+    AggregatorV3Interface tokenpricefeed;
+    address tokenAddress; // Address of the token (0x0 for ETH)
+    uint256 decimal;      // Number of decimals (18 for ETH, USDT, DAI, RVL)
+    string name;          // Token name (e.g., "USDT")
+}
+
+struct LiquidityPool {
+    uint256 token1Id;      // First token ID
+    uint256 token2Id;      // Second token ID
+    uint256 token1Balance; // Balance of token1
+    uint256 token2Balance; // Balance of token2
+}
+```
+- **Token:** Stores token details, including its Chainlink price feed and ERC20 address (0x0 for ETH).
+- **LiquidityPool:** Tracks token pair balances for swaps, identified by a bytes32 pair ID.
+
+---
+
+### 3. Constructor and Token Initialization
+```solidity
+constructor() Ownable(msg.sender) {
+    tokens[0] = Token({
+        tokenpricefeed: AggregatorV3Interface(0x91f3Ff344623aDC499eC6A34fC6311e8Abbf7880),
+        tokenAddress: address(0),
+        decimal: 18,
+        name: "ETH"
+    });
+    tokenPrice[0] = ETH_PRICE_USD;
+    // Similar initialization for USDT, DAI, RVL
+    tokenCount = 4;
+}
+```
+- Initializes four tokens (ETH, USDT, DAI, RVL) with their Chainlink price feeds and token prices.
+- Sets `tokenCount` to track the number of supported tokens.
+
+---
+
+### 4. Swap Calculation Logic
+```solidity
+function _calculateSwapAmount(
+    uint256 _fromTokenId,
+    uint256 _toTokenId,
+    uint256 _amountToSwap,
+    uint256 _fromDecimal,
+    uint256 _toDecimal
+) internal view returns (uint256) {
+    uint256 fromPrice = tokenPrice[_fromTokenId];
+    uint256 toPrice = tokenPrice[_toTokenId];
+    require(fromPrice > 0 && toPrice > 0, "Invalid price data");
+
+    uint256 amountToReceive;
+    if (_fromTokenId == 3) { // RVL as fromToken
+        if (_toTokenId == 0) { // RVL to ETH
+            amountToReceive = (_amountToSwap * fromPrice) / 10**18;
+        } else { // RVL to USDT/DAI
+            uint256 ethValue = (_amountToSwap * fromPrice) / 10**18; // RVL in ETH
+            amountToReceive = (ethValue * ETH_PRICE_USD) / toPrice; // ETH to USD
+        }
+    } else if (_toTokenId == 3) { // USDT/DAI/ETH to RVL
+        // Similar logic for ETH to RVL and USD to RVL
+    } else { // ETH/USDT/DAI to ETH/USDT/DAI
+        amountToReceive = (_amountToSwap * fromPrice) / toPrice;
+    }
+    return (amountToReceive * 10**_toDecimal) / 10**_fromDecimal;
+}
+```
+- Calculates the output amount for a swap based on token prices.
+- Handles special cases for RVL (priced in ETH) versus other tokens (priced in USD).
+- Adjusts for token decimals to ensure accurate amounts.
+
+---
+
+### 5. Token-to-Token Swap
+```solidity
+function swapTokensForTokens(
+    uint256 _fromTokenId,
+    uint256 _toTokenId,
+    uint256 _amountToSwap
+) external nonReentrant returns (bool) {
+    require(_fromTokenId < tokenCount && _toTokenId < tokenCount, "Invalid token ID");
+    require(_fromTokenId != 0 && _toTokenId != 0, "Use ETH swap functions for ETH");
+    require(_amountToSwap > 0, "Invalid amount");
+
+    uint256 amountToReceive = _calculateSwapAmount(...);
+    uint256 minAmountOut = (amountToReceive * SLIPPAGE_TOLERANCE) / 100;
+    require(amountToReceive >= minAmountOut, "Slippage too high");
+
+    require(IERC20(fromToken.tokenAddress).transferFrom(...));
+    require(IERC20(toToken.tokenAddress).transfer(...));
+
+    emit SwapExecuted(...);
+    return true;
+}
+```
+- Validates token IDs, amounts, and liquidity.
+- Applies slippage tolerance (98% of expected output).
+- Transfers tokens using `transferFrom` and updates liquidity pool balances.
+- Emits a `SwapExecuted` event.
+
+---
+
+### 6. ETH Swaps
+```solidity
+function swapEthForTokens(uint256 _tokenId) external payable nonReentrant returns (bool) {
+    require(_tokenId < tokenCount && _tokenId != 0, "Invalid token ID");
+    require(msg.value > 0, "Invalid ETH amount");
+
+    uint256 amountToReceive = _calculateSwapAmount(...);
+    require(IERC20(token.tokenAddress).transfer(...));
+
+    emit SwapExecuted(...);
+    return true;
+}
+```
+- Handles ETH-to-token swaps by accepting `msg.value` and transferring tokens.
+- Similar logic applies to `swapTokensForEth`.
+
+---
+
+### 7. Liquidity Management
+```solidity
+function addLiquidity(
+    uint256 _token1Id,
+    uint256 _token2Id,
+    uint256 _token1Amount,
+    uint256 _token2Amount
+) external payable {
+    if (_token1Id != 0) {
+        require(IERC20(tokens[_token1Id].tokenAddress).transferFrom(...));
+    } else {
+        require(msg.value == _token1Amount, "Incorrect ETH amount");
+    }
+    emit LiquidityAdded(...);
+}
+```
+- Allows users to add liquidity by transferring tokens or ETH.
+- Initializes new pools or updates existing ones.
+- Similar logic for `removeLiquidity`.
+
+---
+
+### 8. Admin Functions
+```solidity
+function addToken(
+    address _tokenAddress,
+    uint256 _decimal,
+    string memory _name,
+    AggregatorV3Interface _priceFeed
+) external onlyOwner {
+    tokens[tokenCount] = Token({...});
+    tokenPrice[tokenCount] = gettokenPrice(_priceFeed);
+    tokenCount++;
+}
+```
+- Allows the owner to add new tokens with custom price feeds.
+- Updates `tokenPrice` for the new token.
+
+---
+
+## Usage Instructions
+
+### Prerequisites
+- **Wallet:** A Web3 wallet (e.g., MetaMask) with ETH and supported tokens.
+- **Network:** Deployed on an Ethereum-compatible network (e.g., Sepolia testnet).
+- **Approvals:** Approve the Swapper contract to spend ERC20 tokens.
+
+### Steps to Swap Tokens
+1. **Connect Wallet:** Connect your wallet to the Revolend platform.
+2. **Select Tokens:** Choose the `fromToken` and `toToken` (e.g., ETH to USDT).
+3. **Enter Amount:** Specify the amount to swap.
+4. **Approve Tokens:** For token-to-token swaps, approve the contract to spend your tokens.
+5. **Execute Swap:**
+   - For ETH-to-token: Call `swapEthForTokens` with ETH.
+   - For token-to-token: Call `swapTokensForTokens`.
+   - For token-to-ETH: Call `swapTokensForEth`.
+6. **Confirm Transaction:** Sign the transaction in your wallet.
+
+### Adding Liquidity
+- Select a token pair (e.g., ETH/USDT).
+- Specify amounts for both tokens.
+- Approve tokens (if not ETH).
+- Call `addLiquidity` with the appropriate amounts.
+
+### Removing Liquidity
+- Select the token pair.
+- Call `removeLiquidity` to withdraw all liquidity.
+
+---
+
+## Security Considerations
+- **Reentrancy Protection:** `nonReentrant` modifier prevents reentrancy attacks.
+- **Slippage Tolerance:** Ensures users receive at least 98% of the expected amount.
+- **Chainlink Oracles:** Provides reliable price feeds (though token prices are used in this version).
+- **Ownable:** Restricts token addition to the contract owner.
+- **Liquidity Checks:** Prevents swaps with insufficient liquidity.
+
