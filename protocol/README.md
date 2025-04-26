@@ -1,10 +1,12 @@
-##crossfi testnet contracts
+##Swell testnet contracts
 
-- **[LENDING](https://test.xfiscan.com/address/0xD2570DD7bdf47B381d11859efB739595f583CAaB)**: 0xD2570DD7bdf47B381d11859efB739595f583CAaB
+- **[LENDING](https://swell-testnet-explorer.alt.technology/address/0x1C1446490a2A062BAE07584f3116c179D2A07178)**: 0x1C1446490a2A062BAE07584f3116c179D2A07178
 
-- **[USDT](https://test.xfiscan.com/token/0xe8B0c8A6ED34Cffd85a324DA1D139432F3511c17)**: 0xe8B0c8A6ED34Cffd85a324DA1D139432F3511c17
+- **[SWAP](https://swell-testnet-explorer.alt.technology/address/0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16)**:0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16
 
-- **[DAI](https://test.xfiscan.com/token/0x1442487bb17414d61e00ad1fd148aade193ad3e9)**: 0x1442487bb17414d61e00ad1fd148aade193ad3e9
+- **[USDT](https://swell-testnet-explorer.alt.technology/token/0x8e74Dbce9C5070E92795806D95b690469f685EbF)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
 
-- **[NXF](https://test.xfiscan.com/token/0xd8261aA43AaC9F624853ac94A90d3D02409a9935)**: 0xd8261aA43AaC9F624853ac94A90d3D02409a9935
+- **[DAI](https://swell-testnet-explorer.alt.technology/address/0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
+
+- **[RVL](https://swell-testnet-explorer.alt.technology/address/0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc)**: 0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc
 

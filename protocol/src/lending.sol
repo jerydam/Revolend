@@ -1,28 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
-contract P2PLending is Ownable(msg.sender) {
+contract P2PLending is Ownable {
     constructor(
-        address initialowner,
+        address _initialowner,
         address _treasuryaddr,
-        address revo,
+        address Revo,
         address usdt,
         address dai
-    ) {
-        initialowner = msg.sender;
+    ) Ownable(_initialowner) {
         treasuryAddress = _treasuryaddr;
-        _addCollateral(revo);
+        _addCollateral(Revo);
         _addCollateral(usdt);
         _addCollateral(dai);
     }
 
     // The minimum and maximum amount of ETH that can be loaned
-    uint public constant MIN_LOAN_AMOUNT = 100 ether;
-    uint public constant MAX_LOAN_AMOUNT = 1000000 ether;
+    uint public constant MIN_LOAN_AMOUNT = 0.001 ether;
+    uint public constant MAX_LOAN_AMOUNT = 100000 ether;
     // The minimum and maximum interest rate in percentage that can be set for a loan
     uint public constant MIN_INTEREST_RATE = 2;
     uint public constant MAX_INTEREST_RATE = 20;
