@@ -237,11 +237,11 @@ Liquidity providers in the RevoLend Swap will be rewarded with incentives. Users
 
 ### USDT
 
-- **[DAI](https://swell-testnet-explorer.alt.technology/address/0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
+- **[USDT](https://swell-testnet-explorer.alt.technology/address/0x8e74Dbce9C5070E92795806D95b690469f685EbF)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
 
 ### DAI
 
-- **[USDT](https://swell-testnet-explorer.alt.technology/token/0x8e74Dbce9C5070E92795806D95b690469f685EbF)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
+- **[DAI](https://swell-testnet-explorer.alt.technology/token/0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
 
 
 
