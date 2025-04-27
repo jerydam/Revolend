@@ -228,6 +228,13 @@ Liquidity providers in the RevoLend Swap will be rewarded with incentives. Users
 ✅ [RevoLend Token](https://swell-testnet-explorer.alt.technology/address/0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc) 🟢
 - Address: `0xbC3AafFBbB0618F3808E626aA5DB96D623161AFc`
 
+### Swap Contract
+
+✅ [Swap](https://swell-testnet-explorer.alt.technology/address/0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16) 🟢
+- Address: `0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16`
+
+## Other tokens
+
 ### USDT
 
 - **[DAI](https://swell-testnet-explorer.alt.technology/address/0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
@@ -235,10 +242,6 @@ Liquidity providers in the RevoLend Swap will be rewarded with incentives. Users
 ### DAI
 
 - **[USDT](https://swell-testnet-explorer.alt.technology/token/0x8e74Dbce9C5070E92795806D95b690469f685EbF)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
-
-### Swap contract
-
-- **[DAI](https://swell-testnet-explorer.alt.technology/address/0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16)**: 0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16
 
 
 
