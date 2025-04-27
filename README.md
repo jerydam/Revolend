@@ -233,7 +233,7 @@ Liquidity providers in the RevoLend Swap will be rewarded with incentives. Users
 ✅ [Swap](https://swell-testnet-explorer.alt.technology/address/0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16) 🟢
 - Address: `0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16`
 
-## Other tokens
+## Other Tokens
 
 ### USDT
 
