@@ -8,6 +8,8 @@ import {
     usdtContractABI,
     daiContractAddress,
     daiContractABI, 
+    swapContractAddress,
+    swapContractABI
   } from "@/abiAndContractSettings";
 import { useWeb3ModalProvider, useWeb3ModalAccount } from '@web3modal/ethers/react'
 import { BrowserProvider, Contract, formatUnits } from 'ethers'
@@ -112,6 +114,12 @@ export default function MetricsSection() {
             <div className="m-[0.4cm]">
              <div className="font-[500] text-[#fff] bg-[#00f] px-[0.4cm] py-[0.1cm] rounded-md mb-[0.2cm]" style={{display:"inline-block"}}>DAI Contract Address</div>
              <div className="text-[#aaa]" style={{overflow:"auto"}}>{daiContractAddress}</div>
+            </div>
+            </div>
+            <div className="grid-cols-1">
+            <div className="m-[0.4cm]">
+             <div className="font-[500] text-[#fff] bg-[#00f] px-[0.4cm] py-[0.1cm] rounded-md mb-[0.2cm]" style={{display:"inline-block"}}>Swap Contract Address</div>
+             <div className="text-[#aaa]" style={{overflow:"auto"}}>{swapContractAddress}</div>
             </div>
             </div>
             </div>
