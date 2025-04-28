@@ -1,5 +1,5 @@
-# RevoLend Documentation [Web App](https://revolend.vercel.app) / [Demo Video]()
-![File](https://www.youtube.com/watch?v=eMj6y8-ERDQ)
+# RevoLend Documentation [Web App](https://revolend.vercel.app) / [Demo Video](https://www.youtube.com/watch?v=eMj6y8-ERDQ)
+![File](https://supposed-emerald-snake.myfilebase.com/ipfs/QmNVYrKhgWUfVRkeWMZPgxCqrq2Z4iXxsFw6bHEj1eYPbU)
 RevoLend is a next-generation DeFi protocol transforming peer-to-peer (P2P) lending and borrowing through a secure, collateral-backed dApp. Designed to overcome the inefficiencies of traditional finance, RevoLend offers users a faster, more transparent, and more accessible lending experience.
 
 Powered by the Swell test network, RevoLend brings together robust smart contracts, seamless integrations, and a highly intuitive front-end interface. Users enjoy complete control over their assets and data, secured through wallet or email login — ensuring privacy and security at every step.
@@ -233,15 +233,15 @@ Liquidity providers in the RevoLend Swap will be rewarded with incentives. Users
 ✅ [Swap](https://swell-testnet-explorer.alt.technology/address/0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16) 🟢
 - Address: `0x3D5C7d5D5595D086468f1f2ef20f14ca18013e16`
 
-## Other tokens
+## Other Tokens
 
 ### USDT
 
-- **[DAI](https://swell-testnet-explorer.alt.technology/address/0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
+- **[USDT](https://swell-testnet-explorer.alt.technology/address/0x8e74Dbce9C5070E92795806D95b690469f685EbF)**: 0x8e74Dbce9C5070E92795806D95b690469f685EbF
 
 ### DAI
 
-- **[USDT](https://swell-testnet-explorer.alt.technology/token/0x8e74Dbce9C5070E92795806D95b690469f685EbF)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
+- **[DAI](https://swell-testnet-explorer.alt.technology/token/0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D)**: 0xC19ad8949EAEffeF07aE1c87FE31533F639a7e3D
 
 
 
