@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
 import {
-  nftContractAddress,
-  nftContractABI,
-  daoContractAddress,
-  daoContractABI,
-  stakeContractABI,
-  stakeContractAddress,
   tokenContractAddress,
   tokenContractABI,
-  treasuryContractABI, 
-  treasuryContractAddress,
   swapContractABI,
   swapContractAddress,
   lendBorrowContractABI,
